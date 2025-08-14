@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Museum Art Viewer</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+
+  <!-- link of document : https://metmuseum.github.io/ -->
+   
+    <style>
+        body {
+            background-color: #121212;
+            color: #f8f9fa;
+        }
+        .card {
+            background-color: #1e1e1e;
+            color: white;
+        }
+        .card img {
+            height: 350px;
+            object-fit: contain;
+            background-color: #333;
+        }
+    </style>
+</head>
+<body class="container py-4">
+
+    <h2 class="text-center mb-4">🏛 The Metropolitan Museum of Art Collection</h2>
+
+    <!-- Search bar -->
+    <div class="input-group mb-4">
+        <input type="number" id="txtArt" placeholder="Enter Artwork ID" class="form-control">
+        <button onclick="SearchClick()" class="btn btn-warning"><i class="bi bi-search"></i> Search</button>
+    </div>
+
+    <!-- Artwork Display -->
+    <div id="artContainer" class="d-flex justify-content-center"></div>
+
+    <script>
+        function LoadArtData(artNumber) {
+            var url = `https://collectionapi.metmuseum.org/public/collection/v1/objects/${artNumber}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+
+                    if (!data || !data.objectID) {
+                        $("#artContainer").html(`<p class="text-danger">Artwork not found.</p>`);
+                        return;
+                    }
+
+                    let imageUrl = data.primaryImageSmall || "https://via.placeholder.com/300x400?text=No+Image";
+
+                    let card = `
+                        <div class="card shadow-lg" style="width: 30rem;">
+                            <img src="${imageUrl}" class="card-img-top" alt="${data.title || 'Artwork'}">
+                            <div class="card-body">
+                                <h5 class="card-title">${data.title || 'Untitled'}</h5>
+                                <p class="card-text"><strong>Artist:</strong> ${data.artistDisplayName || 'Unknown'}</p>
+                                <p class="card-text"><strong>Credit:</strong> ${data.creditLine || 'N/A'}</p>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-dark text-light"><strong>Department:</strong> ${data.department || 'N/A'}</li>
+                                <li class="list-group-item bg-dark text-light"><strong>Culture:</strong> ${data.culture || 'N/A'}</li>
+                                <li class="list-group-item bg-dark text-light"><strong>Period:</strong> ${data.period || 'N/A'}</li>
+                                <li class="list-group-item bg-dark text-light"><strong>Date:</strong> ${data.objectDate || 'Unknown'}</li>
+                                <li class="list-group-item bg-dark text-light"><strong>Medium:</strong> ${data.medium || 'N/A'}</li>
+                                <li class="list-group-item bg-dark text-light"><strong>Dimensions:</strong> ${data.dimensions || 'N/A'}</li>
+                            </ul>
+                            <div class="card-body">
+                                <a href="${data.objectURL}" target="_blank" class="btn btn-primary btn-sm"><i class="bi bi-box-arrow-up-right"></i> View on Met Museum</a>
+                            </div>
+                        </div>
+                    `;
+
+                    $("#artContainer").html(card);
+                })
+                .catch(err => {
+                    console.error("Error fetching artwork:", err);
+                    $("#artContainer").html(`<p class="text-danger">Error fetching artwork data.</p>`);
+                });
+        }
+
+        function SearchClick() {
+            let artNumber = document.getElementById("txtArt").value.trim();
+            if (artNumber) {
+                LoadArtData(artNumber);
+            } else {
+                $("#artContainer").html(`<p class="text-warning">Please enter a valid artwork ID.</p>`);
+            }
+        }
+    </script>
+
+</body>
+</html>
